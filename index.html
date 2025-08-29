@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Course: Intro to VERSES Genius</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals -->
+    <!-- Application Structure Plan: The application is structured as a single-page interactive course with a persistent sidebar for navigation and a main content area. This design was chosen for its intuitive, self-paced learning flow, mirroring modern educational platforms. Users can freely jump between modules. Each module is a self-contained section, and the main content area dynamically updates to display the selected module's lessons and unique interactive simulations (e.g., a probability calculator, an API simulator, an agent animation). This structure transforms a static outline into an active learning experience, allowing users to directly engage with the core concepts of the VERSES Genius system in a structured, easy-to-follow manner. -->
+    <!-- Visualization & Content Choices: Module 1 uses text and icons (Unicode) to introduce foundational concepts. Module 2 (Sprinkler Example) uses an interactive HTML/CSS diagram and sliders to let users set evidence, with a Chart.js donut chart dynamically updating to show calculated probabilities, demonstrating Bayesian belief updating. Module 3 (Burglary Example) simulates an API call with dropdowns for inputs and a formatted text block for the output, teaching the concept of programmatic interaction. Module 4 (Agent Navigation) uses an animated HTML grid and a Chart.js line chart to visualize a POMDP agent's path and changing certainty, making an abstract concept tangible. These choices prioritize active, hands-on learning and conceptual understanding over passive reading. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfcfb;
+            color: #333;
+        }
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar-link.active, .sidebar-link:hover {
+            background-color: #e5e7eb;
+            color: #111827;
+            transform: translateX(4px);
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .sim-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 4px;
+        }
+        .sim-cell {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            background-color: #f3f4f6;
+            border-radius: 4px;
+        }
+        .sim-cell.agent { background-color: #60a5fa; }
+        .sim-cell.goal { background-color: #4ade80; }
+        .sim-cell.obstacle { background-color: #9ca3af; }
+        .sim-cell.path { background-color: #93c5fd; }
+        .sim-cell.observed { border: 2px solid #3b82f6; }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <nav class="w-full md:w-64 bg-gray-50 border-r border-gray-200 p-4 md:p-6 flex-shrink-0">
+            <h1 class="text-xl font-bold text-gray-800 mb-6">VERSES Genius Course</h1>
+            <ul class="space-y-2">
+                <li><a href="#" class="sidebar-link block p-3 rounded-lg font-medium text-gray-600" data-module="1">Module 1: Foundations</a></li>
+                <li><a href="#" class="sidebar-link block p-3 rounded-lg font-medium text-gray-600" data-module="2">Module 2: Bayesian Inference</a></li>
+                <li><a href="#" class="sidebar-link block p-3 rounded-lg font-medium text-gray-600" data-module="3">Module 3: Genius API</a></li>
+                <li><a href="#" class="sidebar-link block p-3 rounded-lg font-medium text-gray-600" data-module="4">Module 4: Advanced Agents</a></li>
+                <li><a href="#" class="sidebar-link block p-3 rounded-lg font-medium text-gray-600" data-module="5">Module 5: Final Project</a></li>
+            </ul>
+        </nav>
+        <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+            <div id="module-1" class="content-section">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Module 1: The Foundations of Spatial Intelligence and VERSES Genius</h2>
+                <p class="text-lg text-gray-600 mb-8">This module introduces the core concepts behind the VERSES Genius system. You will learn about the principles that guide its design and get a high-level overview of the platform's components, setting the stage for the practical applications in later modules.</p>
+
+                <div class="space-y-6">
+                    <article class="p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Lesson 1: What is Spatial Intelligence?</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Defining Spatial Intelligence and its relationship to Artificial General Intelligence (AGI).</li>
+                            <li>The core principles behind the VERSES approach: Active Inference and the Free Energy Principle.</li>
+                            <li>An overview of the Genius platform and its key components: the Model Editor, Agents, and APIs.</li>
+                        </ul>
+                    </article>
+                    <article class="p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Lesson 2: Setting up your Environment</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Navigating the Genius Developer Portal.</li>
+                            <li>Setting up the necessary SDKs and APIs.</li>
+                            <li>A simple "Hello, World!" example to verify the setup.</li>
+                        </ul>
+                    </article>
+                </div>
+            </div>
+
+            <div id="module-2" class="content-section">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Module 2: Probabilistic Reasoning with Bayesian Inference</h2>
+                <p class="text-lg text-gray-600 mb-8">This module dives into the heart of probabilistic reasoning. You'll learn about Bayesian inference and apply it directly in an interactive example. This hands-on experience will show you how intelligent agents can update their beliefs based on new evidence to reason under uncertainty.</p>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">The Sprinkler Example</h3>
+                        <p class="text-gray-700 mb-4">We want to determine the probability of it raining or the sprinkler being on, given that we observe the grass is wet. Use the controls below to set the evidence and see how the probabilities change.</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="grassWet" class="font-medium text-gray-700">Is the grass wet?</label>
+                                <select id="grassWet" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="unknown">Unknown</option>
+                                    <option value="true">True</option>
+                                    <option value="false">False</option>
+                                </select>
+                            </div>
+                            <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                                <h4 class="font-semibold text-blue-800">Calculated Probabilities:</h4>
+                                <p id="sprinklerProb" class="text-blue-700">P(Sprinkler=T): --%</p>
+                                <p id="rainProb" class="text-blue-700">P(Rain=T): --%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col justify-center items-center">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Belief Update Visualization</h3>
+                        <div class="chart-container">
+                            <canvas id="sprinklerChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="module-3" class="content-section">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Module 3: Decision-Making with the Genius API</h2>
+                <p class="text-lg text-gray-600 mb-8">Learn how to interact with Genius models programmatically. This module simulates using the Genius API to query a Bayesian network for a classic reasoning problem. This will give you a feel for how a developer would integrate Genius's intelligence into their own applications.</p>
+                <div class="p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">The Burglary Example: API Simulation</h3>
+                    <p class="text-gray-700 mb-4">A burglar alarm can be triggered by a burglary or a rare earthquake. Two neighbors, John and Mary, call if they hear the alarm. What is the probability of a burglary if both John and Mary call? Set the evidence and query the "API".</p>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="johnCalls" class="font-medium text-gray-700">John Calls?</label>
+                                    <select id="johnCalls" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                        <option value="true">True</option>
+                                        <option value="false">False</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="maryCalls" class="font-medium text-gray-700">Mary Calls?</label>
+                                    <select id="maryCalls" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                        <option value="true">True</option>
+                                        <option value="false">False</option>
+                                    </select>
+                                </div>
+                                <button id="runApiQuery" class="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Run API Query</button>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Simulated API Response:</h4>
+                            <pre id="apiResponse" class="bg-gray-900 text-green-400 p-4 rounded-lg text-sm whitespace-pre-wrap h-48">Click "Run API Query" to see results...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="module-4" class="content-section">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Module 4: Advanced Agents and Planning with POMDPs</h2>
+                <p class="text-lg text-gray-600 mb-8">This module introduces Partially Observable Markov Decision Processes (POMDPs), a framework for sequential decision-making under uncertainty. Through a visual simulation, you'll see how a Genius agent can plan and act in an environment where it has incomplete information, a key capability for real-world autonomy.</p>
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Agent Navigation Simulation</h3>
+                        <p class="text-gray-700 mb-4">An agent (🤖) must navigate a warehouse to reach the goal (🏁) while avoiding obstacles (🧱). The agent can only observe adjacent cells. Click start to see it plan and execute its path.</p>
+                        <div id="simGrid" class="sim-grid mb-4"></div>
+                        <button id="startSim" class="w-full md:w-auto bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition">Start Simulation</button>
+                    </div>
+                    <div class="p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                         <h3 class="text-xl font-semibold text-gray-800 mb-4 text-center">Agent Certainty</h3>
+                         <p class="text-gray-600 text-sm mb-4 text-center">Watch how the agent's certainty in its path evolves as it gathers more observations.</p>
+                         <div class="chart-container" style="max-width: 100%; height: 250px;">
+                            <canvas id="pomdpChart"></canvas>
+                        </div>
+                        <p id="agentStatus" class="mt-4 text-center font-medium text-gray-700">Status: Idle</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="module-5" class="content-section">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Module 5: Final Project and Next Steps</h2>
+                <p class="text-lg text-gray-600 mb-8">In this final module, you will consolidate your learning by planning and executing a project of your own. This is your opportunity to apply the principles of Spatial Intelligence and the tools of the Genius platform to a problem that interests you.</p>
+                <div class="space-y-6">
+                    <article class="p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Lesson 9: Project Planning</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Reviewing the course concepts from all modules.</li>
+                            <li>Brainstorming a final project idea that utilizes Bayesian reasoning or agent-based decision-making.</li>
+                        </ul>
+                    </article>
+                    <article class="p-6 bg-white rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Lesson 10: Final Project and Showcase</h3>
+                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                            <li>Developing a small application using the Genius APIs to solve a real-world problem of your choice.</li>
+                            <li>Presenting your project and explaining the underlying logic and models you created.</li>
+                        </ul>
+                    </article>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            const contentSections = document.querySelectorAll('.content-section');
+            let sprinklerChart, pomdpChart;
+
+            function setActiveModule(moduleNumber) {
+                sidebarLinks.forEach(link => {
+                    link.classList.toggle('active', link.dataset.module === moduleNumber);
+                });
+                contentSections.forEach(section => {
+                    section.classList.toggle('active', section.id === `module-${moduleNumber}`);
+                });
+            }
+
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const moduleNumber = e.target.dataset.module;
+                    setActiveModule(moduleNumber);
+                });
+            });
+
+            setActiveModule('1');
+
+            function initializeSprinklerChart() {
+                const ctx = document.getElementById('sprinklerChart').getContext('2d');
+                sprinklerChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Sprinkler On', 'Sprinkler Off', 'Rain', 'No Rain'],
+                        datasets: [{
+                            label: 'Probability',
+                            data: [50, 50, 20, 80],
+                            backgroundColor: ['#3b82f6', '#bfdbfe', '#10b981', '#a7f3d0'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.raw.toFixed(1)}%`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateSprinklerProbabilities() {
+                const grassWet = document.getElementById('grassWet').value;
+                let p_s, p_r;
+
+                const p_r_true = 0.2;
+                const p_s_true_given_r_true = 0.01;
+                const p_s_true_given_r_false = 0.4;
+
+                const p_w_true_given_s_true_r_true = 0.99;
+                const p_w_true_given_s_true_r_false = 0.9;
+                const p_w_true_given_s_false_r_true = 0.8;
+                const p_w_true_given_s_false_r_false = 0.0;
+
+                const p_s_true = p_s_true_given_r_true * p_r_true + p_s_true_given_r_false * (1 - p_r_true);
+
+                if (grassWet === 'unknown') {
+                    p_s = p_s_true;
+                    p_r = p_r_true;
+                } else {
+                    const isWet = grassWet === 'true';
+                    let p_w = 0;
+                    const scenarios = [
+                        {s: true, r: true, p: p_s_true_given_r_true * p_r_true},
+                        {s: true, r: false, p: p_s_true_given_r_false * (1 - p_r_true)},
+                        {s: false, r: true, p: (1-p_s_true_given_r_true) * p_r_true},
+                        {s: false, r: false, p: (1-p_s_true_given_r_false) * (1 - p_r_true)}
+                    ];
+                    
+                    scenarios.forEach(scenario => {
+                        let p_w_given_scenario;
+                        if (scenario.s && scenario.r) p_w_given_scenario = p_w_true_given_s_true_r_true;
+                        else if (scenario.s && !scenario.r) p_w_given_scenario = p_w_true_given_s_true_r_false;
+                        else if (!scenario.s && scenario.r) p_w_given_scenario = p_w_true_given_s_false_r_true;
+                        else p_w_given_scenario = p_w_true_given_s_false_r_false;
+                        
+                        if (!isWet) p_w_given_scenario = 1 - p_w_given_scenario;
+                        
+                        p_w += p_w_given_scenario * scenario.p;
+                    });
+
+                    let p_s_and_w = (isWet ? p_w_true_given_s_true_r_true : 1 - p_w_true_given_s_true_r_true) * p_s_true_given_r_true * p_r_true + (isWet ? p_w_true_given_s_true_r_false : 1 - p_w_true_given_s_true_r_false) * p_s_true_given_r_false * (1 - p_r_true);
+                    let p_r_and_w = (isWet ? p_w_true_given_s_true_r_true : 1 - p_w_true_given_s_true_r_true) * p_s_true_given_r_true * p_r_true + (isWet ? p_w_true_given_s_false_r_true : 1 - p_w_true_given_s_false_r_true) * (1 - p_s_true_given_r_true) * p_r_true;
+                    
+                    p_s = p_s_and_w / p_w;
+                    p_r = p_r_and_w / p_w;
+                }
+
+                document.getElementById('sprinklerProb').textContent = `P(Sprinkler=T): ${(p_s * 100).toFixed(1)}%`;
+                document.getElementById('rainProb').textContent = `P(Rain=T): ${(p_r * 100).toFixed(1)}%`;
+
+                sprinklerChart.data.datasets[0].data = [p_s * 100, (1 - p_s) * 100, p_r * 100, (1 - p_r) * 100];
+                sprinklerChart.update();
+            }
+
+            document.getElementById('grassWet').addEventListener('change', updateSprinklerProbabilities);
+            initializeSprinklerChart();
+            updateSprinklerProbabilities();
+
+            document.getElementById('runApiQuery').addEventListener('click', () => {
+                const johnCalls = document.getElementById('johnCalls').value === 'true';
+                const maryCalls = document.getElementById('maryCalls').value === 'true';
+                const apiResponseEl = document.getElementById('apiResponse');
+
+                apiResponseEl.textContent = 'Running inference...';
+
+                setTimeout(() => {
+                    const p_b = 0.001;
+                    const p_e = 0.002;
+
+                    const p_a_given_b_t_e_t = 0.95;
+                    const p_a_given_b_t_e_f = 0.94;
+                    const p_a_given_b_f_e_t = 0.29;
+                    const p_a_given_b_f_e_f = 0.001;
+                    
+                    const p_j_given_a_t = 0.90;
+                    const p_j_given_a_f = 0.05;
+                    const p_m_given_a_t = 0.70;
+                    const p_m_given_a_f = 0.01;
+
+                    let numerator = 0;
+                    let denominator = 0;
+
+                    [true, false].forEach(b => {
+                        [true, false].forEach(e => {
+                            let p_a;
+                            if (b && e) p_a = p_a_given_b_t_e_t;
+                            else if (b && !e) p_a = p_a_given_b_t_e_f;
+                            else if (!b && e) p_a = p_a_given_b_f_e_t;
+                            else p_a = p_a_given_b_f_e_f;
+
+                            const p_j = johnCalls ? p_j_given_a_t : 1 - p_j_given_a_t;
+                            const p_j_not_a = johnCalls ? p_j_given_a_f : 1 - p_j_given_a_f;
+                            const p_m = maryCalls ? p_m_given_a_t : 1 - p_m_given_a_t;
+                            const p_m_not_a = maryCalls ? p_m_given_a_f : 1 - p_m_given_a_f;
+                            
+                            const p_calls_given_a = p_j * p_m;
+                            const p_calls_given_not_a = p_j_not_a * p_m_not_a;
+
+                            const p_b_val = b ? p_b : 1 - p_b;
+                            const p_e_val = e ? p_e : 1 - p_e;
+
+                            const prob_term = (p_calls_given_a * p_a + p_calls_given_not_a * (1 - p_a)) * p_b_val * p_e_val;
+                            denominator += prob_term;
+                            if (b) {
+                                numerator += prob_term;
+                            }
+                        });
+                    });
+                    
+                    const final_prob = numerator / denominator;
+
+                    const response = {
+                        query: "P(Burglary | JohnCalls, MaryCalls)",
+                        evidence: {
+                            johnCalls: johnCalls,
+                            maryCalls: maryCalls
+                        },
+                        result: {
+                            probability: final_prob.toFixed(4),
+                            confidence: "High"
+                        },
+                        execution_time_ms: 45
+                    };
+                    apiResponseEl.textContent = JSON.stringify(response, null, 2);
+                }, 500);
+            });
+
+            const simGridEl = document.getElementById('simGrid');
+            const agentStatusEl = document.getElementById('agentStatus');
+            const startSimBtn = document.getElementById('startSim');
+            const gridSize = 10;
+            const obstacles = [[1,2], [1,3], [1,4], [3,6], [4,6], [5,6], [6,6], [8,1], [8,2], [8,3]];
+            const startPos = {x: 0, y: 0};
+            const goalPos = {x: 9, y: 9};
+            let simInterval;
+
+            function createGrid() {
+                simGridEl.innerHTML = '';
+                for (let i = 0; i < gridSize * gridSize; i++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('sim-cell');
+                    cell.id = `cell-${Math.floor(i/gridSize)}-${i%gridSize}`;
+                    simGridEl.appendChild(cell);
+                }
+                obstacles.forEach(([y, x]) => document.getElementById(`cell-${y}-${x}`).classList.add('obstacle'));
+                document.getElementById(`cell-${startPos.y}-${startPos.x}`).innerHTML = '🤖';
+                document.getElementById(`cell-${goalPos.y}-${goalPos.x}`).innerHTML = '🏁';
+            }
+
+            function initializePomdpChart() {
+                const ctx = document.getElementById('pomdpChart').getContext('2d');
+                pomdpChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: [{
+                            label: 'Path Certainty',
+                            data: [],
+                            borderColor: '#16a34a',
+                            backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true, max: 1 } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+            
+            function runSimulation() {
+                clearInterval(simInterval);
+                createGrid();
+                startSimBtn.disabled = true;
+                agentStatusEl.textContent = 'Status: Planning path...';
+
+                pomdpChart.data.labels = [];
+                pomdpChart.data.datasets[0].data = [];
+                pomdpChart.update();
+
+                let path = [{...startPos}];
+                let certainty = 0.3;
+                let step = 0;
+
+                pomdpChart.data.labels.push(step);
+                pomdpChart.data.datasets[0].data.push(certainty);
+                pomdpChart.update();
+
+                simInterval = setInterval(() => {
+                    step++;
+                    const current = path[path.length - 1];
+
+                    if (current.x === goalPos.x && current.y === goalPos.y) {
+                        clearInterval(simInterval);
+                        agentStatusEl.textContent = 'Status: Goal Reached!';
+                        startSimBtn.disabled = false;
+                        return;
+                    }
+
+                    agentStatusEl.textContent = `Status: Moving... Step ${step}`;
+
+                    let dx = Math.sign(goalPos.x - current.x);
+                    let dy = Math.sign(goalPos.y - current.y);
+                    
+                    let next = { x: current.x + dx, y: current.y + dy };
+                    if (dx !== 0 && dy !== 0) {
+                        if (Math.random() > 0.5) next = { x: current.x + dx, y: current.y };
+                        else next = { x: current.x, y: current.y + dy };
+                    } else if (dx !== 0) {
+                         next = { x: current.x + dx, y: current.y };
+                    } else if (dy !== 0) {
+                         next = { x: current.x, y: current.y + dy };
+                    }
+
+                    const isObstacle = obstacles.some(([y, x]) => x === next.x && y === next.y);
+                    
+                    if (isObstacle || next.x < 0 || next.x >= gridSize || next.y < 0 || next.y >= gridSize) {
+                        certainty *= 0.8;
+                        agentStatusEl.textContent = 'Status: Obstacle detected, replanning...';
+                        if (Math.random() > 0.5) {
+                           path.push({x: current.x, y: Math.min(gridSize-1, current.y+1)});
+                        } else {
+                           path.push({x: Math.min(gridSize-1, current.x+1), y: current.y});
+                        }
+                    } else {
+                        certainty = Math.min(1, certainty + 0.1);
+                        path.push(next);
+                    }
+                    
+                    createGrid();
+                    path.forEach(p => {
+                        const cell = document.getElementById(`cell-${p.y}-${p.x}`);
+                        if (cell) cell.classList.add('path');
+                    });
+                    const head = path[path.length - 1];
+                    document.getElementById(`cell-${head.y}-${head.x}`).innerHTML = '🤖';
+                    document.getElementById(`cell-${head.y}-${head.x}`).classList.add('agent');
+
+                    pomdpChart.data.labels.push(step);
+                    pomdpChart.data.datasets[0].data.push(certainty);
+                    pomdpChart.update();
+
+                    if (step > 50) {
+                         clearInterval(simInterval);
+                         agentStatusEl.textContent = 'Status: Failed to reach goal.';
+                         startSimBtn.disabled = false;
+                    }
+
+                }, 300);
+            }
+
+            startSimBtn.addEventListener('click', runSimulation);
+            createGrid();
+            initializePomdpChart();
+        });
+    </script>
+</body>
+</html>
